@@ -41,45 +41,35 @@ def OneflipNeighborhood(x):#OK
 
     return nbrhood
 
-def taboo_search(max_super_best_steps):
+def taboo_search(x_curr, x_best, f_curr, f_best, f_super_best, solution, max_super_best_steps): #calcurate current value[0] and weights[1] and x[2]
 
     taboo_tenure = 30
     solutionsChecked = 0
     
-    local_best_solution = copy.deepcopy(solution)
-    f_super_best =  copy.deepcopy(solution)       #Best solution so far
+    local_best_solution = copy.deepcopy(solution) # to return
 
     taboo_list=[0]*n            #taboo status of each element in solution
 
     count=0                     #counting number of non improving steps
 
-
     while (count< max_super_best_steps):
 
-        Neighborhood = OneflipNeighborhood(solution[2])  # create a list of all neighbors in the neighborhood of x_curr
+        Neighborhood = OneflipNeighborhood(x_curr)  # create a list of all neighbors in the neighborhood of x_curr
         neighbor=0      #Number of element changed in current step
-        local_best_solution[0]=0     #Reseting best neighbour value to zero
+        f_best[0]=0     #Reseting best neighbour value to zero
         for s in Neighborhood:  # evaluate every member in the neighborhood of x_curr
             solutionsChecked=solutionsChecked+1
 
-            #print evaluate(s)
-            #print 'mememememememme'
-
-            if (evaluate(s)[0] > local_best_solution[0]) and (taboo_list[neighbor]==0):  # and (evaluate(s)[1]< maxWeight):
-                solution[2] = s[:]  # find the best member and keep track of that solution
-                local_best_solution[0] = evaluate(s)[0]    #Best solution in neighbourhood
-                local_best_solution[1] = evaluate(s)[1]
+            if (evaluate(s)[0] > f_best[0]) and (taboo_list[neighbor]==0):  # and (evaluate(s)[1]< maxWeight):
+                x_curr = s[:]  # find the best member and keep track of that solution
+                f_best = evaluate(s)[:]    #Best solution in neighbourhood
                 neighbor_selected = neighbor   #neighbour selected in current step
 
             if (evaluate(s)[0]> f_super_best[0]):    #Updating best solution fourd so far
-                solution[2] = s[:]
-                local_best_solution[0] = evaluate(s)[0]
-                local_best_solution[1] = evaluate(s)[1]
-
-                f_super_best[0] = evaluate(s)[0]
-                f_super_best[1] = evaluate(s)[1]
-
-                x_super= s[:]
+                x_curr = s[:]
+                f_best = evaluate(s)[:]
+                f_super_best = evaluate(s)[:]
+                x_best = s[:]
                 neighbor_selected = neighbor
                 change=1
 
@@ -97,8 +87,10 @@ def taboo_search(max_super_best_steps):
                 taboo_list[i]=xx-1
 
         taboo_list[neighbor_selected]=taboo_tenure   #Updating taboo status of selected item
-
-    local_best_solution[2] = x_super
+    
+    local_best_solution[0] = f_best[0] # update solution
+    local_best_solution[1] = f_best[1]
+    local_best_solution[2] = x_curr
 
     return local_best_solution
 
@@ -115,31 +107,34 @@ def augumented_cost(x_curr, penalty, limit):#OK
     return augmented
 
 # Function: Local Search #only calicurate the cost and obtain local-opt(value and weight and x)
-def local_search(penalty, max_attempts, limit):
+def local_search(solution, penalty, max_attempts, limit):
 
-    x_curr = Initial_solution(0.1)  
+    x_curr = Initial_solution(0.1)  # x_curr will hold the current solution
+    x_best = x_curr[:]  # x_best will hold the best solution
+
     f_curr = evaluate(x_curr)  # f_curr will hold the evaluation of the current soluton
     f_best = f_curr[:]          #Best solution in neighbourhood
-
     f_super_best=f_curr[:]     #Best solution so far
 
-    
-    ag_cost = augumented_cost(x_curr, penalty = penalty, limit = limit) #initial
-
-    opt_solution = copy.deepcopy(solution) #best solution
+    opt_solution = copy.deepcopy(solution) 
     candidate = copy.deepcopy(solution) 
 
-    candidate = taboo_search(solution, max_attempts) # tabootenure 30
+    ag_cost = augumented_cost(x_curr, penalty = penalty, limit = limit) #initial
+
+    candidate = taboo_search(x_curr, x_best, f_curr, f_best, f_super_best,solution, max_attempts) # tabootenure 30
+    #print candidate
     candidate_augmented = augumented_cost(candidate[2], penalty = penalty, limit = limit)
-       
+    #print candidate_augmented
+
     if candidate_augmented < ag_cost:
        opt_solution  = copy.deepcopy(candidate)
        ag_cost = augumented_cost(opt_solution[2], penalty = penalty, limit = limit)
+       print 1
                          
     return opt_solution 
 
 #Function: Utility
-def utility (x_curr, penalty, limit = 1): #OK
+def utility (x_curr, penalty, limit): #OK
     utilities = [0] * len(penalty)
    
     for i in range(0, len(penalty) - 1):
@@ -161,34 +156,37 @@ def update_penalty(penalty, utilities): #OK
 
     return penalty
     
-# Function: Guided Search #only obtain the local_opt(value and weight and x)
+# Function: Guided Search #only obtain the local_opt(value and weight and x) #OK
 #@profile
 def guided_search(alpha, local_search_optima, max_attempts, iterations):
 
     t1 = time.time() 
     count = 0
-    limit = alpha * (local_search_optima / 20 )  
+    limit = alpha * (local_search_optima / 50 )  
     penalty = [0] * n 
  
     solution= [0] * 3
     solution[2] = copy.deepcopy(penalty)
 
-    print solution
-
     best_solution = copy.deepcopy(solution)
     
     while (count < iterations):
-        solution = local_search(penalty = penalty, max_attempts = max_attempts, limit = limit)
-        utilities = utility(solution[2], penalty = penalty, limit = limit) 
-        #print utilities
+        solution = local_search(solution, penalty = penalty, max_attempts = max_attempts, limit = limit)
+        #print solution #kousinsaretenai
+        utilities = utility(solution[2], penalty , limit) 
+        #print utilities #kousinsaretenai
         penalty = update_penalty(penalty = penalty, utilities = utilities)
-        #print penalty
+        #print penalty kousinsaretenai
 
-        t2 = time.time() #add
+        t2 = time.time() 
+
         if (solution[0] < best_solution[0]):
             best_solution = copy.deepcopy(solution) 
+
         count = count + 1
-        elapsed_time = t2-t1 #add
+
+        elapsed_time = t2-t1 
+
         print("Iteration = ", count, " value ", best_solution[0]," weights ", best_solution[1] ," Time ", elapsed_time) 
     
 #----------------------------------------------------------------------------------------------------------
