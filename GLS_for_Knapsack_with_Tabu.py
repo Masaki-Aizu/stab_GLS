@@ -65,7 +65,7 @@ def taboo_search(x_curr, x_best, f_curr, f_best, f_super_best, solution, max_sup
                 f_best = evaluate(s)[:]    #Best solution in neighbourhood
                 neighbor_selected = neighbor   #neighbour selected in current step
 
-            if (evaluate(s)[0]> f_super_best[0]):    #Updating best solution fourd so far
+            if (evaluate(s)[0] > f_super_best[0]):    #Updating best solution fourd so far
                 x_curr = s[:]
                 f_best = evaluate(s)[:]
                 f_super_best = evaluate(s)[:]
@@ -108,6 +108,8 @@ def augumented_cost(x_curr, penalty, limit):#OK
 
 # Function: Local Search #only calicurate the cost and obtain local-opt(value and weight and x)
 def local_search(solution, penalty, max_attempts, limit):
+ 
+    flag = 0
 
     x_curr = Initial_solution(0.1)  # x_curr will hold the current solution
     x_best = x_curr[:]  # x_best will hold the best solution
@@ -129,9 +131,12 @@ def local_search(solution, penalty, max_attempts, limit):
     if candidate_augmented < ag_cost:
        opt_solution  = copy.deepcopy(candidate)
        ag_cost = augumented_cost(opt_solution[2], penalty = penalty, limit = limit)
-       print 1
-                         
-    return opt_solution 
+       flag += 1
+    
+    if flag >= 1 :                     
+      return opt_solution 
+    else :
+      return candidate
 
 #Function: Utility
 def utility (x_curr, penalty, limit): #OK
@@ -172,15 +177,16 @@ def guided_search(alpha, local_search_optima, max_attempts, iterations):
     
     while (count < iterations):
         solution = local_search(solution, penalty = penalty, max_attempts = max_attempts, limit = limit)
-        #print solution #kousinsaretenai
+        #print solution 
+        #print best_solution
         utilities = utility(solution[2], penalty , limit) 
-        #print utilities #kousinsaretenai
-        penalty = update_penalty(penalty = penalty, utilities = utilities)
-        #print penalty kousinsaretenai
+        #print utilities 
+        #penalty = update_penalty(penalty = penalty, utilities = utilities)
+        #print penalty 
 
         t2 = time.time() 
 
-        if (solution[0] < best_solution[0]):
+        if (solution[0] > best_solution[0]):
             best_solution = copy.deepcopy(solution) 
 
         count = count + 1
@@ -204,7 +210,7 @@ for i in range(0, n):
 
 weights = []
 for i in range(0, n):
-    weights.append(myPRNG.uniform(5, 20)) # make some weight from 5 between 20 in float
+    weights.append(myPRNG.uniform(1, 20)) # make some weight from 5 between 20 in float
     
 maxWeight = 5 * n 
 
@@ -212,4 +218,4 @@ maxWeight = 5 * n
 solutionsChecked = 0
 
 # Call the Function
-guided_search(alpha = 0.5, local_search_optima = 100, max_attempts = 30, iterations = 10) #change iterationsnumber to 10 from 2500
+guided_search(alpha = 0.5, local_search_optima = 100, max_attempts = 10, iterations = 100) #change iterationsnumber to 10 from 2500
