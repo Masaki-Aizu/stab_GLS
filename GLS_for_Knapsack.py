@@ -16,12 +16,12 @@ def Random_select_function(X, item_id, item_len):
          m = random.choice(item_id)    # select randomly one number(0 <= 99)
          list_n.append(m)                          
          list_s[0] = list_s[0] + X[m][0]        # calicurate total_value
-         list_s[1] = list_s[1] + X[m][1] 
-         # print list_s[1]       # calicurate total_weight
+         list_s[1] = list_s[1] + X[m][1]        # calicurate total_weight
+         # print list_s[1]       
          item_id.remove(m)
          # print item_id
     
-    list_s[0] = list_s[0] - X[m][0]     # koko   
+    list_s[0] = list_s[0] - X[m][0]        
     list_s[1] = list_s[1] - X[m][1] 
     list_n.remove(m)
     item_id.append(m)
@@ -34,30 +34,22 @@ def search(X, id, solution, item_n):
     local_solution = copy.deepcopy(solution)
     local_solution_item = copy.deepcopy(item_n)
     # print local_solution_item
-    n = random.choice(local_solution_item)
-    local_solution_item.remove(n)
-    id.append(n)
+    n = random.choice(id)
     # print len(id)
     # print len(local_solution_item), len(id)
-    local_solution[0] = local_solution[0] - X[n][0]
-    local_solution[1] = local_solution[1] - X[n][1]
-
-
-    while(local_solution[1] < Max_weight):
-         #print id  
-         m = random.choice(id)
-         local_solution_item.append(m)                          # select randomly one number(0 <= 99)
-         # print local_solution_item
-         local_solution[0] = local_solution[0] + X[m][0]        # calicurate total_value
-         local_solution[1] = local_solution[1] + X[m][1]        # calicurate total_weight
-         id.remove(m)
-         flag = 1
     
-    if flag == 1:
-      local_solution[0] = local_solution[0] - X[m][0]        
-      local_solution[1] = local_solution[1] - X[m][1] 
-      local_solution_item.remove(m)
-      id.append(m)
+    while((local_solution[1] + X[n][1]) > Max_weight):
+         # print local_solution[1]
+         m = random.choice(local_solution_item)
+         local_solution_item.remove(m)
+         id.append(m)                          # select randomly one number(0 <= 99)
+         # print local_solution_item
+         local_solution[0] = local_solution[0] - X[m][0]        # calicurate total_value
+         local_solution[1] = local_solution[1] - X[m][1]        # calicurate total_weight
+
+    local_solution[0] = local_solution[0] + X[n][0]        
+    local_solution[1] = local_solution[1] + X[n][1]      
+    local_solution_item.append(n)
 
     # print local_solution
 
